@@ -14,7 +14,7 @@ jobs:
 
       - name: Clone Mainline Kernel Source
         run: |
-          # Клонируем стабильную ветку ядра для SM7125
+          # Клонируем ветку ядра для SM7125
           git clone --depth=1 https://github.com/sm7125-mainline/linux.git kernel
 
       - name: Configure and Build Kernel
@@ -23,32 +23,34 @@ jobs:
           export ARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
           
-          # Применяем базовую конфигурацию процессора SM7125
-          make make defconfig sm7125.config
+          # ШАГ 1: Генерируем базовый дефконфиг ARM64 (создает основу .config)
+          make defconfig
           
-          # Жестко включаем параметры ядра для UEFI (Silicium/EDK2) и системных утилит Linux
-          scripts/config --enable CONFIG_EFI
-          scripts/config --enable CONFIG_EFI_STUB
-          scripts/config --enable CONFIG_CGROUPS
-          scripts/config --enable CONFIG_BLK_DEV_INITRD
-          scripts/config --enable CONFIG_SIMPLE_FB
-          scripts/config --enable CONFIG_FB_SIMPLE
-          scripts/config --enable CONFIG_FRAMEBUFFER_CONSOLE
+          # ШАГ 2: Накладываем специфичные настройки процессора sm7125 поверх базы
+          ./scripts/kconfig/merge_config.sh -m .config arch/arm64/configs/sm7125.config
           
-          # Обновляем конфигурационный файл (.config)
+          # ШАГ 3: Принудительно включаем параметры ядра для UEFI (Silicium/EDK2) и Systemd
+          ./scripts/config --enable CONFIG_EFI
+          ./scripts/config --enable CONFIG_EFI_STUB
+          ./scripts/config --enable CONFIG_CGROUPS
+          ./scripts/config --enable CONFIG_BLK_DEV_INITRD
+          ./scripts/config --enable CONFIG_SIMPLE_FB
+          ./scripts/config --enable CONFIG_FB_SIMPLE
+          ./scripts/config --enable CONFIG_FRAMEBUFFER_CONSOLE
+          
+          # ШАГ 4: Пересобираем и проверяем финальный .config
           make olddefconfig
           
-          # Собираем ядро и файлы дерева устройств
+          # ШАГ 5: Запускаем компиляцию ядра Image и дерева устройств (DTB)
           make -j$(nproc) Image dtbs
 
       - name: Package Joyeuse Artifacts
         run: |
           mkdir -p output
-          # Копируем чистое универсальное EFI-ядро
+          # Копируем скомпилированное EFI-ядро
           cp kernel/arch/arm64/boot/Image output/Image
           
-          # Копируем специфичные для joyeuse скомпилированные деревья устройств
-          # (в зависимости от версии ядра файл может называться sm7125-... или atoll-...)
+          # Ищем и копируем строго DTB файл для joyeuse
           find kernel/arch/arm64/boot/dts/qcom/ -name "*joyeuse*.dtb" -exec cp {} output/ \;
 
       - name: Upload Joyeuse Kernel
