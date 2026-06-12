@@ -24,7 +24,7 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-gnu-
           
           # Применяем базовую конфигурацию процессора SM7125
-          make sm7125_defconfig
+          make sm7125
           
           # Жестко включаем параметры ядра для UEFI (Silicium/EDK2) и системных утилит Linux
           scripts/config --enable CONFIG_EFI
