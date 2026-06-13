@@ -30,13 +30,13 @@ jobs:
           ./scripts/kconfig/merge_config.sh -m .config arch/arm64/configs/sm7125.config
           
           # ШАГ 3: Принудительно включаем параметры ядра для UEFI (Silicium/EDK2) и Systemd
-          ./scripts/config --enable CONFIG_EFI
-          ./scripts/config --enable CONFIG_EFI_STUB
-          ./scripts/config --enable CONFIG_CGROUPS
-          ./scripts/config --enable CONFIG_BLK_DEV_INITRD
-          ./scripts/config --enable CONFIG_SIMPLE_FB
-          ./scripts/config --enable CONFIG_FB_SIMPLE
-          ./scripts/config --enable CONFIG_FRAMEBUFFER_CONSOLE
+          #./scripts/config --enable CONFIG_EFI
+          #./scripts/config --enable CONFIG_EFI_STUB
+          #./scripts/config --enable CONFIG_CGROUPS
+          #./scripts/config --enable CONFIG_BLK_DEV_INITRD
+          #./scripts/config --enable CONFIG_SIMPLE_FB
+          #./scripts/config --enable CONFIG_FB_SIMPLE
+          #./scripts/config --enable CONFIG_FRAMEBUFFER_CONSOLE
           
           # ШАГ 4: Пересобираем и проверяем финальный .config
           make olddefconfig
